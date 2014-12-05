@@ -37,6 +37,8 @@ const (
 	JsonEncodeFormat
 )
 
+type M map[string]string
+
 type Logger struct {
 	mu           sync.Mutex
 	Level        Level
@@ -50,6 +52,14 @@ func New() *Logger {
 		EncodeFormat: TextEncodeFormat,
 		Out:          os.Stdout,
 	}
+}
+
+func (logger *Logger) Error() {
+
+}
+
+func (logger *Logger) Output() {
+
 }
 
 type Record struct {
