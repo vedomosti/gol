@@ -63,7 +63,7 @@ func New() *Logger {
 // todo: simple way
 func (logger *Logger) SetFormatter(etype EncodeFormat, fields F) {
 	logger.Formatter.Type = etype
-	logger.Formatter.Fields = fileds
+	logger.Formatter.Fields = fields
 }
 
 func (logger *Logger) Error() {}
