@@ -1,5 +1,11 @@
 package gol
 
+import (
+	"io"
+	"os"
+	"sync"
+)
+
 type Level uint8
 
 const (
@@ -22,4 +28,36 @@ var LevelsString = map[Level]string{
 
 func (level Level) String() string {
 	return LevelsString[level]
+}
+
+type EncodeFormat uint8
+
+const (
+	TextEncodeFormat EncodeFormat = iota
+	JsonEncodeFormat
+)
+
+type Logger struct {
+	mu           sync.Mutex
+	Level        Level
+	EncodeFormat EncodeFormat
+	Out          io.Writer
+}
+
+func New() *Logger {
+	return &Logger{
+		Level:        InfoLevel,
+		EncodeFormat: TextEncodeFormat,
+		Out:          os.Stdout,
+	}
+}
+
+type Record struct {
+	Logger *Logger
+}
+
+func NewRecord(logger *Logger) *Record {
+	return &Record{
+		Logger: logger,
+	}
 }
