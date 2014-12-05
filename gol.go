@@ -31,36 +31,44 @@ func (level Level) String() string {
 }
 
 type EncodeFormat uint8
+type F []string
 
 const (
 	TextEncodeFormat EncodeFormat = iota
 	JsonEncodeFormat
 )
 
+type Formatter struct {
+	Type   EncodeFormat
+	Fields F
+}
+
 type M map[string]string
 
 type Logger struct {
-	mu           sync.Mutex
-	Level        Level
-	EncodeFormat EncodeFormat
-	Out          io.Writer
+	mu        sync.Mutex
+	Level     Level
+	Formatter Formatter
+	Out       io.Writer
 }
 
 func New() *Logger {
 	return &Logger{
-		Level:        InfoLevel,
-		EncodeFormat: TextEncodeFormat,
-		Out:          os.Stdout,
+		Level:     InfoLevel,
+		Formatter: Formatter{Type: TextEncodeFormat},
+		Out:       os.Stdout,
 	}
 }
 
-func (logger *Logger) Error() {
-
+// todo: simple way
+func (logger *Logger) SetFormatter(etype EncodeFormat, fields F) {
+	logger.Formatter.Type = etype
+	logger.Formatter.Fields = fileds
 }
 
-func (logger *Logger) Output() {
+func (logger *Logger) Error() {}
 
-}
+func (logger *Logger) Output() {}
 
 type Record struct {
 	Logger *Logger
@@ -70,4 +78,8 @@ func NewRecord(logger *Logger) *Record {
 	return &Record{
 		Logger: logger,
 	}
+}
+
+func (rec *Record) String() string {
+	return "fire"
 }
