@@ -23,6 +23,8 @@ var (
 	colorSqlType   = ansi.ColorCode("blue+bh")
 	colorSqlQuery  = ansi.ColorCode("white+h")
 	colorSqlParams = ansi.ColorCode("yellow")
+
+	colorMsg = ansi.ColorCode("white+h")
 )
 
 // Req struct for http request
@@ -94,3 +96,7 @@ func (sql *Sql) String() string {
 
 // Msg type for raw message
 type Msg string
+
+func (msg *Msg) String() string {
+	return colorMsg + string(*msg) + colorReset
+}
