@@ -4,82 +4,76 @@ import (
 	"io"
 	"os"
 	"sync"
+	"time"
 )
 
-type Level uint8
+type LevelType uint8
 
 const (
-	PanicLevel Level = iota
-	FatalLevel
-	ErrorLevel
-	WarnLevel
-	InfoLevel
-	DebugLevel
+	PANIC LevelType = iota
+	FATAL
+	ERROR
+	WARN
+	INFO
+	DEBUG
 )
 
-var LevelsString = map[Level]string{
-	PanicLevel: "panic",
-	FatalLevel: "fatal",
-	ErrorLevel: "error",
-	WarnLevel:  "warning",
-	InfoLevel:  "info",
-	DebugLevel: "debug",
+var LevelsString = map[LevelType]string{
+	PANIC: "PANIC",
+	FATAL: "FATAL",
+	ERROR: "ERROR",
+	WARN:  "WARN",
+	INFO:  "INFO",
+	DEBUG: "DEBUG",
 }
 
-func (level Level) String() string {
+func (level LevelType) String() string {
 	return LevelsString[level]
 }
 
 type EncodeFormat uint8
-type F []string
 
 const (
-	TextEncodeFormat EncodeFormat = iota
-	JsonEncodeFormat
+	TEXT EncodeFormat = iota
+	JSON
 )
 
-type Formatter struct {
-	Type   EncodeFormat
-	Fields F
-}
-
-type M map[string]string
-
 type Logger struct {
-	mu        sync.Mutex
-	Level     Level
-	Formatter Formatter
-	Out       io.Writer
+	mu     sync.Mutex
+	Level  Level
+	Format EncodeFormat
+	Out    io.Writer
 }
 
 func New() *Logger {
 	return &Logger{
-		Level:     InfoLevel,
-		Formatter: Formatter{Type: TextEncodeFormat},
-		Out:       os.Stdout,
+		Level:  InfoLevel,
+		Format: EncodeFormat,
+		Out:    os.Stdout,
 	}
 }
-
-// todo: simple way
-func (logger *Logger) SetFormatter(etype EncodeFormat, fields F) {
-	logger.Formatter.Type = etype
-	logger.Formatter.Fields = fields
-}
-
-func (logger *Logger) Error() {}
 
 func (logger *Logger) Output() {}
 
-type Record struct {
-	Logger *Logger
+type Record interface {
+	ToString()
+	ToJson()
 }
 
-func NewRecord(logger *Logger) *Record {
-	return &Record{
-		Logger: logger,
-	}
+type RecordHttpRequest struct {
+	Ip     string
+	Method string
+	Url    string
 }
 
-func (rec *Record) String() string {
-	return "fire"
+type RecordHttpResponse struct {
+	Status   int
+	Url      string
+	Duration time.Duration
+}
+
+type RecordSql struct {
+	Query    string
+	Params   interface{}
+	Duration time.Duration
 }
