@@ -19,6 +19,10 @@ var (
 
 	colorResStatus = ansi.ColorCode("white+b")
 	colorDuration  = ansi.ColorCode("green")
+
+	colorSqlType   = ansi.ColorCode("blue+bh")
+	colorSqlQuery  = ansi.ColorCode("white+h")
+	colorSqlParams = ansi.ColorCode("yellow")
 )
 
 // Req struct for http request
@@ -72,6 +76,20 @@ type Sql struct {
 	Query    string
 	Params   interface{}
 	Duration time.Duration
+}
+
+func (sql *Sql) Slice() []string {
+	return []string{
+		colorSqlType + "SQL" + colorReset,
+		colorSqlQuery + sql.Query + colorReset,
+		colorSqlParams + fmt.Sprintf("%+v", sql.Params) + colorReset,
+		colorDuration + fmt.Sprintf("%v", sql.Duration) + colorReset,
+	}
+
+}
+
+func (sql *Sql) String() string {
+	return strings.Join(sql.Slice(), " ")
 }
 
 // Msg type for raw message
