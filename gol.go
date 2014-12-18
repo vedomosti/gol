@@ -1,9 +1,12 @@
 package gol
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -40,40 +43,49 @@ const (
 
 type Logger struct {
 	mu     sync.Mutex
-	Level  Level
+	Level  LevelType
 	Format EncodeFormat
 	Out    io.Writer
 }
 
 func New() *Logger {
 	return &Logger{
-		Level:  InfoLevel,
-		Format: EncodeFormat,
+		Level:  INFO,
+		Format: TEXT,
 		Out:    os.Stdout,
 	}
 }
 
-func (logger *Logger) Output() {}
+func (logger *Logger) Output(r *Record) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	r.Time = time.Now()
+	r.Pid = syscall.Getpid()
 
-type Record interface {
-	ToString()
-	ToJson()
+	buf := r.Bytes()
+	buf.WriteTo(logger.Out)
 }
 
-type RecordHttpRequest struct {
-	Ip     string
-	Method string
-	Url    string
+func (logger *Logger) Error(d interface{}) {
+	logger.Output(&Record{Level: ERROR, Body: d})
 }
 
-type RecordHttpResponse struct {
-	Status   int
-	Url      string
-	Duration time.Duration
+type IRecord interface {
+	String()
+	Json()
 }
 
-type RecordSql struct {
-	Query    string
-	Params   interface{}
-	Duration time.Duration
+type Record struct {
+	Pid   int
+	Time  time.Time
+	Level LevelType
+	Body  interface{}
+}
+
+func (rec *Record) Bytes() (buf bytes.Buffer) {
+	buf.WriteString(fmt.Sprintf("%5d | ", syscall.Getpid()))
+	buf.WriteString(rec.Time.Format("2006/01/02 15:04:05"))
+	buf.WriteString("\n")
+
+	return buf
 }
