@@ -8,5 +8,5 @@ import (
 
 func TestLevelString(t *testing.T) {
 	assert := assert.New(t)
-	assert.Equal("fatal", FatalLevel.String())
+	assert.Equal("FATAL", FATAL.String())
 }

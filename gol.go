@@ -2,9 +2,10 @@ package gol
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -39,6 +40,7 @@ type EncodeFormat uint8
 const (
 	TEXT EncodeFormat = iota
 	JSON
+	PRETTY
 )
 
 type Logger struct {
@@ -51,41 +53,75 @@ type Logger struct {
 func New() *Logger {
 	return &Logger{
 		Level:  INFO,
-		Format: TEXT,
+		Format: PRETTY,
 		Out:    os.Stdout,
 	}
 }
 
-func (logger *Logger) Output(r *Record) {
-	logger.mu.Lock()
-	defer logger.mu.Unlock()
-	r.Time = time.Now()
-	r.Pid = syscall.Getpid()
-
-	buf := r.Bytes()
-	buf.WriteTo(logger.Out)
-}
-
-func (logger *Logger) Error(d interface{}) {
-	logger.Output(&Record{Level: ERROR, Body: d})
-}
-
-type IRecord interface {
-	String()
-	Json()
-}
-
+// Record struct represent current record for logging
 type Record struct {
-	Pid   int
-	Time  time.Time
-	Level LevelType
-	Body  interface{}
+	Level  LevelType
+	Caller *Caller
+	Body   interface{}
 }
 
-func (rec *Record) Bytes() (buf bytes.Buffer) {
-	buf.WriteString(fmt.Sprintf("%5d | ", syscall.Getpid()))
-	buf.WriteString(rec.Time.Format("2006/01/02 15:04:05"))
-	buf.WriteString("\n")
+func (record *Record) PidString() string {
+	return strconv.Itoa(syscall.Getpid())
+}
 
-	return buf
+func (record *Record) TimeString() string {
+	return time.Now().Format("2006/01/02 15:04:05")
+}
+
+func (record *Record) Text() []byte {
+	var buf bytes.Buffer
+	delimeter := []byte{" "}
+
+	buf.WriteString(record.PidString())
+	buf.Write(delimeter)
+	buf.WriteString(record.TimeString())
+	buf.Write(delimeter)
+	buf.WriteString(record.Level.String())
+	buf.Write(delimeter)
+	buf.WriteString(record.Caller.ShortFileName())
+	buf.Write(delimeter)
+	buf.WriteString(record.Caller.ShortFuncName())
+
+	return buf.Bytes()
+}
+
+func (record *Record) Pretty() []byte {
+	return []byte{}
+}
+
+func (record *Record) Json() []byte {
+	return []byte{}
+}
+
+func (record *Record) Bytes(format EncodeFormat) []byte {
+	switch format {
+	default:
+		return record.Text()
+	case PRETTY:
+		return record.Pretty()
+	case JSON:
+		return record.Json()
+	}
+
+	return nil
+}
+
+// Caller struct store info about caller
+type Caller struct {
+	FuncName string
+	FileName string
+	Line     int
+}
+
+func (caller *Caller) ShortFileName() string {
+	return filepath.Base(caller.FileName) + ":" + strconv.Itoa(caller.Line)
+}
+
+func (caller *Caller) ShortFuncName() string {
+	return filepath.Base(caller.FuncName)
 }
