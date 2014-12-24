@@ -2,65 +2,15 @@ package gol
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"path/filepath"
 	"strconv"
-	"sync"
 	"syscall"
 	"time"
 )
 
-type LevelType uint8
-
-const (
-	PANIC LevelType = iota
-	FATAL
-	ERROR
-	WARN
-	INFO
-	DEBUG
-)
-
-var LevelsString = map[LevelType]string{
-	PANIC: "PANIC",
-	FATAL: "FATAL",
-	ERROR: "ERROR",
-	WARN:  "WARN",
-	INFO:  "INFO",
-	DEBUG: "DEBUG",
-}
-
-func (level LevelType) String() string {
-	return LevelsString[level]
-}
-
-type EncodeFormat uint8
-
-const (
-	TEXT EncodeFormat = iota
-	JSON
-	PRETTY
-)
-
-type Logger struct {
-	mu     sync.Mutex
-	Level  LevelType
-	Format EncodeFormat
-	Out    io.Writer
-}
-
-func New() *Logger {
-	return &Logger{
-		Level:  INFO,
-		Format: PRETTY,
-		Out:    os.Stdout,
-	}
-}
-
 // Record struct represent current record for logging
 type Record struct {
-	Level  LevelType
+	Level  Level
 	Caller *Caller
 	Body   interface{}
 }
