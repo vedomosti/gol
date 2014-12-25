@@ -40,29 +40,59 @@ const (
 
 type Logger struct {
 	mu     sync.Mutex
-	Level  Level
-	Format EncodeFormat
-	Out    io.Writer
+	level  Level
+	format EncodeFormat
+	out    io.Writer
 }
 
 func New() *Logger {
 	return &Logger{
-		Level:  INFO,
-		Format: PRETTY,
-		Out:    os.Stderr,
+		level:  INFO,
+		format: PRETTY,
+		out:    os.Stderr,
 	}
+}
+
+func (logger *Logger) Level() Level {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	return logger.level
+}
+
+func (logger *Logger) Format() EncodeFormat {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	return logger.format
+}
+
+func (logger *Logger) SetOutput(out io.Writer) {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	logger.out = out
+}
+
+func (logger *Logger) ignore(level Level) bool {
+	return level > logger.Level()
+}
+
+func (logger *Logger) receive(level Level, args ...interface{}) {
+	if logger.ignore(level) {
+		return
+	}
+
+	record := &Record{
+		Level:  level,
+		Format: logger.Format(),
+		Caller: newCaller(2),
+		Body:   args,
+	}
+
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+
+	logger.out.Write(record.Bytes())
 }
 
 func (logger *Logger) Error(args ...interface{}) {
-	logger.process(ERROR, &Record{Body: args})
-}
-
-func (logger *Logger) process(level Level, record IRecord) {
-	if logger.Level >= level {
-		logger.Out.Write(record.Bytes())
-	}
-}
-
-type IRecord interface {
-	Bytes() []byte
+	logger.receive(ERROR, args...)
 }

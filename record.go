@@ -3,6 +3,7 @@ package gol
 import (
 	"bytes"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"syscall"
 	"time"
@@ -10,6 +11,7 @@ import (
 
 // Record struct represent current record for logging
 type Record struct {
+	Format EncodeFormat
 	Level  Level
 	Caller *Caller
 	Body   interface{}
@@ -25,7 +27,7 @@ func (record *Record) TimeString() string {
 
 func (record *Record) Text() []byte {
 	var buf bytes.Buffer
-	delimeter := []byte{" "}
+	delimeter := []byte(" ")
 
 	buf.WriteString(record.PidString())
 	buf.Write(delimeter)
@@ -48,8 +50,8 @@ func (record *Record) Json() []byte {
 	return []byte{}
 }
 
-func (record *Record) Bytes(format EncodeFormat) []byte {
-	switch format {
+func (record *Record) Bytes() []byte {
+	switch record.Format {
 	default:
 		return record.Text()
 	case PRETTY:
@@ -66,6 +68,15 @@ type Caller struct {
 	FuncName string
 	FileName string
 	Line     int
+}
+
+func newCaller(lvl int) *Caller {
+	pc, fn, line, _ := runtime.Caller(lvl + 1)
+	return &Caller{
+		FuncName: runtime.FuncForPC(pc).Name(),
+		FileName: fn,
+		Line:     line,
+	}
 }
 
 func (caller *Caller) ShortFileName() string {

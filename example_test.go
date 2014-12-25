@@ -1,18 +1,12 @@
 package gol
 
-import (
-	"bytes"
-	"os"
-)
+import "os"
 
 func ExampleLogger_process() {
 	logger := New()
-	logger.Out = os.Stdout
+	logger.SetOutput(os.Stdout)
 
-	var buf bytes.Buffer
-	buf.WriteString("hello")
-
-	logger.process(ERROR, &buf)
+	logger.receive(ERROR, "hello")
 	// Output:
 	// hello
 }
