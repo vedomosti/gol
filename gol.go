@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 	"sync"
+	"syscall"
+	"time"
 )
 
 type Level uint8
@@ -76,21 +78,24 @@ func (logger *Logger) ignore(level Level) bool {
 }
 
 func (logger *Logger) receive(level Level, args ...interface{}) {
+	now := time.Now()
 	if logger.ignore(level) {
 		return
 	}
 
-	record := &Record{
-		Level:  level,
+	rbytes := &Record{
 		Format: logger.Format(),
+		Pid:    syscall.Getpid(),
+		Time:   now,
+		Level:  level,
 		Caller: newCaller(2),
 		Body:   args,
-	}
+	}.Bytes()
 
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 
-	logger.out.Write(record.Bytes())
+	logger.out.Write(rbytes)
 }
 
 func (logger *Logger) Error(args ...interface{}) {

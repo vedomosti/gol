@@ -12,6 +12,8 @@ import (
 // Record struct represent current record for logging
 type Record struct {
 	Format EncodeFormat
+	Pid    int
+	Time   time.Time
 	Level  Level
 	Caller *Caller
 	Body   interface{}
