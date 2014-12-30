@@ -40,18 +40,22 @@ const (
 	PRETTY
 )
 
+type EncoderRecord func(*Record, EncodeFormat) []byte
+
 type Logger struct {
-	mu     sync.Mutex
-	level  Level
-	format EncodeFormat
-	out    io.Writer
+	mu      sync.Mutex
+	level   Level
+	format  EncodeFormat
+	encoder EncoderRecord
+	out     io.Writer
 }
 
 func New() *Logger {
 	return &Logger{
-		level:  INFO,
-		format: PRETTY,
-		out:    os.Stderr,
+		level:   INFO,
+		format:  PRETTY,
+		encoder: Encoder,
+		out:     os.Stderr,
 	}
 }
 
@@ -83,21 +87,27 @@ func (logger *Logger) receive(level Level, args ...interface{}) {
 		return
 	}
 
-	rbytes := &Record{
+	record := &Record{
 		Format: logger.Format(),
 		Pid:    syscall.Getpid(),
 		Time:   now,
 		Level:  level,
 		Caller: newCaller(2),
 		Body:   args,
-	}.Bytes()
+	}
+
+	output := logger.encoder(record, logger.Format())
 
 	logger.mu.Lock()
 	defer logger.mu.Unlock()
 
-	logger.out.Write(rbytes)
+	logger.out.Write(output)
 }
 
 func (logger *Logger) Error(args ...interface{}) {
 	logger.receive(ERROR, args...)
+}
+
+func Encoder(record *Record, format EncodeFormat) []byte {
+	return []byte("hello")
 }
