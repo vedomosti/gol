@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -46,21 +47,14 @@ type Logger struct {
 func New() *Logger {
 	return &Logger{
 		Level: INFO,
+		View:  ViewText,
 		out:   os.Stderr,
 	}
 }
 
-func (logger *Logger) Error(args ...interface{}) {
-	if logger.Level >= ERROR {
-		logger.process(&Record{Time: time.Now(), Level: ERROR, Body: fmt.Sprint(args)})
-	}
-}
-
-// todo ErrorE(err gore.Err)
-// todo ErrorF
-
 func (logger *Logger) process(record *Record) {
 	record.Pid = syscall.Getpid()
+	record.Caller = NewCaller(2)
 
 	buf, err := logger.View(record)
 	if err != nil {
@@ -76,26 +70,31 @@ type Record struct {
 	Time    time.Time
 	Level   Level
 	Pid     int
+	Caller  *Caller
 	Body    string
 	Context []string
 }
 
-func ViewText(record *Record) (*bytes.Buffer, error) {
-	delimeter := []byte(" ")
-	buf := bytes.NewBufferString(strconv.Itoa(record.Pid))
-	buf.Write(delimeter)
-	offset := buf.Len()
-	buf.WriteString(record.Time.Format("2006/01/02 15:04:05"))
-	buf.Write(delimeter)
-	buf.WriteString(record.Level.String())
-	buf.Write(delimeter)
-	buf.WriteString(record.Body)
-	if record.Context != nil {
-		for _, msg := range record.Context {
-			buf.WriteString("\n")
-			buf.WriteString(strings.Repeat(" ", offset))
-			buf.WriteString(msg)
-		}
+// Caller struct store info about caller
+type Caller struct {
+	FuncName string
+	FileName string
+	Line     int
+}
+
+func NewCaller(lvl int) *Caller {
+	pc, fn, line, _ := runtime.Caller(lvl + 1)
+	return &Caller{
+		FuncName: runtime.FuncForPC(pc).Name(),
+		FileName: fn,
+		Line:     line,
 	}
-	return buf, nil
+}
+
+func (caller *Caller) ShortFileName() string {
+	return filepath.Base(caller.FileName) + ":" + strconv.Itoa(caller.Line)
+}
+
+func (caller *Caller) ShortFuncName() string {
+	return filepath.Base(caller.FuncName)
 }
