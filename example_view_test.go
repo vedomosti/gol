@@ -46,6 +46,6 @@ func ExampleViewTexti_Gore() {
 	fmt.Print(buf.String())
 	// Output:
 	// 34572 2015/01/11 15:04:05 ERROR example_view_test.go:35 gol.ExampleViewTexti_Gore [example_view_test.go:38 gol.ExampleViewTexti_Gore] Some error
-	//       #0 example_view_test.go:39 gol.ExampleViewTexti_Gore step one
-	//       #1 example_view_test.go:40 gol.ExampleViewTexti_Gore step two
+	//       #0 [example_view_test.go:39 gol.ExampleViewTexti_Gore] step one
+	//       #1 [example_view_test.go:40 gol.ExampleViewTexti_Gore] step two
 }
