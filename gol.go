@@ -78,9 +78,15 @@ func (logger *Logger) SetiView(v Viewer) {
 	logger.mu.Unlock()
 }
 
-func (logger *Logger) process(record *Record) {
+func (logger *Logger) Log(calldepth int, level Level, msg string, context []string) {
+	if logger.level >= level {
+		logger.process(calldepth, &Record{Time: time.Now(), Level: PANIC, Body: msg, Context: context})
+	}
+}
+
+func (logger *Logger) process(calldepth int, record *Record) {
 	record.Pid = syscall.Getpid()
-	record.Caller = NewCaller(2)
+	record.Caller = NewCaller(calldepth)
 
 	buf, err := logger.view(record)
 	if err != nil {
