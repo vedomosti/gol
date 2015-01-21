@@ -60,6 +60,12 @@ func (logger *Logger) Output(buf *bytes.Buffer) {
 	logger.mu.Unlock()
 }
 
+func (logger *Logger) Level() Level {
+	logger.mu.Lock()
+	defer logger.mu.Unlock()
+	return logger.level
+}
+
 func (logger *Logger) SetLevel(lvl Level) {
 	logger.mu.Lock()
 	logger.level = lvl
@@ -79,7 +85,7 @@ func (logger *Logger) SetView(v Viewer) {
 }
 
 func (logger *Logger) Log(calldepth int, level Level, msg string, context []string) {
-	if logger.level >= level {
+	if logger.Level() >= level {
 		logger.process(calldepth, &Record{Time: time.Now(), Level: level, Body: msg, Context: context})
 	}
 }
