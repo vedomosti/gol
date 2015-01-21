@@ -37,33 +37,59 @@ func (level Level) String() string {
 	return levelsString[level]
 }
 
+type Viewer func(*Record) (*bytes.Buffer, error)
+
 type Logger struct {
 	mu    sync.Mutex
-	Level Level
-	View  func(*Record) (*bytes.Buffer, error)
+	level Level
+	view  Viewer
 	out   io.Writer
 }
 
 func New() *Logger {
 	return &Logger{
-		Level: INFO,
-		View:  ViewText,
+		level: INFO,
+		view:  ViewText,
 		out:   os.Stderr,
 	}
+}
+
+func (logger *Logger) Output(buf *bytes.Buffer) {
+	logger.mu.Lock()
+	logger.out.Write(buf.Bytes())
+	logger.mu.Unlock()
+}
+
+func (logger *Logger) SetLevel(lvl Level) {
+	logger.mu.Lock()
+	logger.level = lvl
+	logger.mu.Unlock()
+}
+
+func (logger *Logger) SetOutput(w io.Writer) {
+	logger.mu.Lock()
+	logger.out = w
+	logger.mu.Unlock()
+}
+
+func (logger *Logger) SetiView(v Viewer) {
+	logger.mu.Lock()
+	logger.view = v
+	logger.mu.Unlock()
 }
 
 func (logger *Logger) process(record *Record) {
 	record.Pid = syscall.Getpid()
 	record.Caller = NewCaller(2)
 
-	buf, err := logger.View(record)
+	buf, err := logger.view(record)
 	if err != nil {
 		logger.mu.Lock()
 		fmt.Fprintf(logger.out, "Error generate view of record: %v\n", err)
 		logger.mu.Unlock()
 	}
 
-	logger.out.Write(buf.Bytes())
+	logger.Output(buf)
 }
 
 type Record struct {
