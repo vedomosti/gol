@@ -96,6 +96,7 @@ func (logger *Logger) DebugE(err error) {
 	msg, context := errorInfo(err)
 	logger.Log(3, DEBUG, msg, context)
 }
+
 func errorInfo(err error) (string, []string) {
 	var msg string
 	var context []string

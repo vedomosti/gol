@@ -72,7 +72,7 @@ func (logger *Logger) SetOutput(w io.Writer) {
 	logger.mu.Unlock()
 }
 
-func (logger *Logger) SetiView(v Viewer) {
+func (logger *Logger) SetView(v Viewer) {
 	logger.mu.Lock()
 	logger.view = v
 	logger.mu.Unlock()
@@ -80,7 +80,7 @@ func (logger *Logger) SetiView(v Viewer) {
 
 func (logger *Logger) Log(calldepth int, level Level, msg string, context []string) {
 	if logger.level >= level {
-		logger.process(calldepth, &Record{Time: time.Now(), Level: PANIC, Body: msg, Context: context})
+		logger.process(calldepth, &Record{Time: time.Now(), Level: level, Body: msg, Context: context})
 	}
 }
 
