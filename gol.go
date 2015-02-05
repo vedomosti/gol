@@ -37,6 +37,15 @@ func (level Level) String() string {
 	return levelsString[level]
 }
 
+func LogLevel(val string) Level {
+	for i, v := range levelsString {
+		if v == val {
+			return Level(i)
+		}
+	}
+	return DEBUG
+}
+
 type Viewer func(*Record) (*bytes.Buffer, error)
 
 type Logger struct {
