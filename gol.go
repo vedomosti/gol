@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -39,7 +40,7 @@ func (level Level) String() string {
 
 func LogLevel(val string) Level {
 	for i, v := range levelsString {
-		if v == val {
+		if v == strings.ToUpper(val) {
 			return Level(i)
 		}
 	}
