@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kavkaz/gore"
+	"github.com/vedomosti/gore"
 )
 
 func ExampleViewText() {

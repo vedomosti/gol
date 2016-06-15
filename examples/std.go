@@ -1,6 +1,6 @@
 package main
 
-import "github.com/kavkaz/gol"
+import "github.com/vedomosti/gol"
 
 func main() {
 	gol.Error("Hello world!")

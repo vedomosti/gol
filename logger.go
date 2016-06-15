@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kavkaz/gore"
+	"github.com/vedomosti/gore"
 )
 
 // Panic

@@ -3,8 +3,8 @@ package main
 import (
 	"errors"
 
-	"github.com/kavkaz/gol"
-	"github.com/kavkaz/gore"
+	"github.com/vedomosti/gol"
+	"github.com/vedomosti/gore"
 )
 
 func main() {

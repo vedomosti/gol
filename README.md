@@ -3,6 +3,6 @@
 ## Install
 
 ```shell
-$ go get github.com/kavkaz/gol
+$ go get github.com/vedomosti/gol
 ```
 
